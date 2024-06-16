@@ -9,10 +9,10 @@ import re
 import urllib.request
 import urllib.error
 
-repo = "SherkeyXD/nonebot-plugin-helldivers" # Owner/ Repo name
+repo = "SherkeyXD/nonebot-plugin-helldivers"  # Owner/ Repo name
 cur_dir = Path(__file__).parent
 contributors_path = cur_dir / "contributors.json"
-changelog_path = cur_dir.parent.parent / "CHANGELOG.md"
+changelog_path = cur_dir.parent / "CHANGELOG.md"
 
 with_hash = False
 with_commitizen = False
