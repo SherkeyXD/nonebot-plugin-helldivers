@@ -1,4 +1,4 @@
-name: Publish to Pypi
+name: Publish to PyPI
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: "publish"
+  cancel-in-progress: false
 
 jobs:
   build-and-publish:
@@ -37,7 +41,6 @@ jobs:
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
           python3 utils/changelog_generator.py --tag "${CURRENT_TAG}" --latest "${PREVIOUS_TAG}"
-
 
       - name: Create Release
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
