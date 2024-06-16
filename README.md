@@ -1,12 +1,10 @@
 <div align="center">
 
-<img src="https://socialify.git.ci/SherkeyXD/nonebot-plugin-helldivers/image?font=Jost&logo=https%3A%2F%2Fstatic.wikia.nocookie.net%2Fhelldivers_gamepedia%2Fimages%2F8%2F8d%2FSuper_earth.png&name=1&owner=1&pattern=Diagonal%20Stripes&theme=Dark" alt="nonebot-plugin-helldivers" width="640" height="320" />
-
 # nonebot-plugin-helldivers
 
-For SuperEarth!
+<img src="https://socialify.git.ci/SherkeyXD/nonebot-plugin-helldivers/image?font=Jost&logo=https%3A%2F%2Fstatic.wikia.nocookie.net%2Fhelldivers_gamepedia%2Fimages%2F8%2F8d%2FSuper_earth.png&name=1&owner=1&pattern=Diagonal%20Stripes&theme=Dark" alt="nonebot-plugin-helldivers" width="640" height="320" />
 
-
+## For SuperEarth!
 
 </div>
 
@@ -16,7 +14,7 @@ For SuperEarth!
 
 目前的功能列表：
 
-+ 简报：发送当前的最高指令，包括任务的具体内容
+- 简报：发送当前的最高指令，包括任务的具体内容
 
 ## 安装插件
 
@@ -47,4 +45,4 @@ poetry add nonebot-plugin-helldivers
 
 - [ ] 使用游戏内的指令风格绘制图片，以及进度条显示
 - [ ] 星系地图绘制，包括补给线以及各个星球战况
-- [ ] 各个星球的环境以及条件（等待API支持）
+- [ ] 各个星球的环境以及条件（等待 API 支持）
