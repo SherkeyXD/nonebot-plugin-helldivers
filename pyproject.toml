@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "nonebot-plugin-helldivers"
+version = "1.0.0"
+description = "为了超级地球！"
+authors = ["SherkeyXD <253294679@qq.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "nonebot_plugin_helldivers"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+nonebot2 = "^2.1.0"
+nonebot-adapter-onebot = "^2.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
