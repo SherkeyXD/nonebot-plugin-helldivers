@@ -1,14 +1,12 @@
 <div align="center">
 
-# nonebot-plugin-helldivers
-
 <img src="https://socialify.git.ci/SherkeyXD/nonebot-plugin-helldivers/image?font=Jost&logo=https%3A%2F%2Fstatic.wikia.nocookie.net%2Fhelldivers_gamepedia%2Fimages%2F8%2F8d%2FSuper_earth.png&name=1&owner=1&pattern=Diagonal%20Stripes&theme=Dark" alt="nonebot-plugin-helldivers" width="640" height="320" />
 
 ## For SuperEarth!
 
 </div>
 
-## 这是什么？
+### 这是什么？
 
 [NoneBot2](https://github.com/nonebot/nonebot2) 侧的 Helldivers 2 插件
 
