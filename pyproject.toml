@@ -11,8 +11,8 @@ packages = [{include = "nonebot_plugin_helldivers"}]
 python = "^3.9"
 aiohttp = "^3.7.4"
 nonebot2 = "^2.1.0"
-nonebot-adapter-onebot = "^2.3.1"
 nonebot_plugin_htmlrender = "^0.3.0"
+nonebot-plugin-send-anything-anywhere = "^0.6.0"
 
 [build-system]
 requires = ["poetry-core"]

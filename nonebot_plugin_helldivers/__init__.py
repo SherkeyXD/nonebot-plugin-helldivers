@@ -1,7 +1,6 @@
 import asyncio
 
 from nonebot import on_command
-from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot.plugin import PluginMetadata
 
 from nonebot import require
@@ -14,13 +13,21 @@ from nonebot_plugin_htmlrender import (  # noqa: E402
     md_to_pic,
 )
 
+require("nonebot_plugin_saa")
+from nonebot_plugin_saa import (  # noqa: E402
+    MessageFactory,
+    Image,
+    Text,
+)
+
+
 __plugin_meta__ = PluginMetadata(
     homepage="https://github.com/SherkeyXD/nonebot-plugin-helldivers",
     name="绝地潜兵信息查询小助手",
     description="为了超级地球！",
     usage="简报：获取星系战争简要概况",
     type="application",
-    supported_adapters={"~onebot.v11"},
+    #supported_adapters={},
     config=Config,
     extra={},
 )
@@ -38,8 +45,7 @@ short = on_command("简报", aliases={"hd简报"})
 
 
 @short.handle()
-async def get_war_info(event: MessageEvent):
-    reply = MessageSegment.reply(id_=event.message_id)
+async def get_war_info():
     finished_flag = asyncio.Event()
     timer_task = asyncio.create_task(
         send_wait_message(
@@ -54,8 +60,9 @@ async def get_war_info(event: MessageEvent):
         finished_flag.set()
         timer_task.cancel()
         pic = await md_to_pic(str(info))
-        await short.finish(reply + MessageSegment.image(pic))
+        await MessageFactory(Image(pic)).send(reply=True, at_sender=False)
     except IndexError:  # 目前没有任务
-        await short.finish(
-            reply + MessageSegment.text("等待超级地球最高司令部的进一步指令")
+        await MessageFactory(Text("等待超级地球最高司令部的进一步指令")).send(
+            reply=True, at_sender=False
         )
+    await short.finish()
