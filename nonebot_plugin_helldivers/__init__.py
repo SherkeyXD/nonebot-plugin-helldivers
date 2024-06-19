@@ -2,6 +2,7 @@ import asyncio
 
 from nonebot import on_command
 from nonebot.plugin import PluginMetadata
+from nonebot.plugin import inherit_supported_adapters
 
 from nonebot import require
 
@@ -27,7 +28,7 @@ __plugin_meta__ = PluginMetadata(
     description="为了超级地球！",
     usage="简报：获取星系战争简要概况",
     type="application",
-    #supported_adapters={},
+    supported_adapters=inherit_supported_adapters("nonebot_plugin_saa"),
     config=Config,
     extra={},
 )
