@@ -26,10 +26,6 @@ jobs:
         run: |
             poetry install
 
-      - name: Setup Playwright Browser
-        run: |
-            poetry run playwright install
-
       - name: Run Tests
         run: |
-            poetry run python -m test.assignment
+            poetry run python -m test.test_assignment
