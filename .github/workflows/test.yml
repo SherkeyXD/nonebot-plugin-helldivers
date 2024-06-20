@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-publish:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -28,4 +28,4 @@ jobs:
 
       - name: Run Tests
         run: |
-            python -m test.assignment
+            poetry run python -m test.assignment
