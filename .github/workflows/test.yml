@@ -28,4 +28,4 @@ jobs:
 
       - name: Run Tests
         run: |
-            poetry run python -m test.test_assignment
+            poetry run pytest -s
