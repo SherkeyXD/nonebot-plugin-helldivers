@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-helldivers"
-version = "1.0.5"
+version = "1.1.0"
 description = "为了超级地球！"
 authors = ["SherkeyXD <253294679@qq.com>"]
 license = "MIT"
