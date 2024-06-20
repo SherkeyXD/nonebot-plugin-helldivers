@@ -1,5 +1,7 @@
 from .api import API
 
+from datetime import datetime, timezone
+
 
 class Assignment:
     def __init__(self, raw, tasks, reward) -> None:
@@ -42,6 +44,11 @@ class Assignment:
         return msg.strip()
 
     def __str__(self) -> str:
+        if self.type == 4:
+            return self.planets_attack_info()
+        return ""
+
+    def planets_attack_info(self):
         info = ""
         info += "# 重要指令\n\n"
         info += f"{self.brief}\n\n"
@@ -76,17 +83,20 @@ class Task:
         return instance
 
     def __str__(self) -> str:
-        percent = (1 - self.planetInfo.health / self.planetInfo.maxHealth) * 100
-        regen = (
-            self.planetInfo.regenPerSecond * 60 * 60 / self.planetInfo.maxHealth * 100
-        )
-        msg = ""
-        msg += "| ✅ |" if self.finished else "| ❌ |"
-        msg += f" {self.planetInfo.name} | "
-        msg += "100% | " if self.finished else f"{percent:.5f}% | "
-        msg += "0% | " if self.finished else f"{regen:.2f}% | "
-        msg += f"{self.planetInfo.statistics.playerCount} |"
-        return msg
+        event = self.planetInfo.event
+        finished = self.finished
+        if event:
+            percent = (1 - event.health / event.maxHealth) * 100
+            regen = f"{event.get_percentage():.2f}%"
+            sign = "🛡️"
+        elif finished:
+            percent, regen, sign = 100, "None", "✅"
+        else:
+            percent = (1 - self.planetInfo.health / self.planetInfo.maxHealth) * 100
+            regen = f"{(self.planetInfo.regenPerSecond * 60 * 60 / self.planetInfo.maxHealth * 100):.2f}%"
+            sign = "❌"
+        percentage = f"{percent:.5f}%" if not finished else "100.00%"
+        return f"| {sign} | {self.planetInfo.name} | {percentage} | {regen} | {self.planetInfo.statistics.playerCount} |"
 
 
 class Planet:
@@ -106,7 +116,7 @@ class Planet:
         self.initialOwner = self.raw["initialOwner"]
         self.currentOwner = self.raw["currentOwner"]
         self.regenPerSecond = self.raw["regenPerSecond"]
-        self.event = self.raw["event"]
+        self.event = Event.create(self.raw["event"])
         self.statistics = PlanetStatistics(self.raw["statistics"])
         self.attacking = self.raw["attacking"]
 
@@ -114,6 +124,41 @@ class Planet:
     async def create(cls, index: int):
         raw = await API.GetApiV1Planets(index)
         return cls(raw)
+
+
+class Event:
+    table = {1: "保卫"}
+
+    def __init__(self, info: dict) -> None:
+        self.id = info["id"]
+        self.eventType = info["eventType"]
+        self.faction = info["faction"]
+        self.health = info["health"]
+        self.maxHealth = info["maxHealth"]
+        self.startTime = self.to_timestamp(info["startTime"])
+        self.endTime = self.to_timestamp(info["endTime"])
+        self.campaignId = info["campaignId"]
+        self.jointOperationIds = info["jointOperationIds"]
+
+    @classmethod
+    def create(cls, info: dict):
+        if info is None:
+            return None
+        return cls(info)
+
+    @staticmethod
+    def to_timestamp(string: str) -> float:
+        date_part, frac_seconds_with_z = string.split(".")
+        frac_seconds = frac_seconds_with_z[:-1]
+        frac_seconds_truncated = frac_seconds[:6]
+        adjusted_timestamp = f"{date_part}.{frac_seconds_truncated}Z"
+        dt = datetime.strptime(adjusted_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        dt = dt.replace(tzinfo=timezone.utc)
+        return dt.timestamp()
+
+    def get_percentage(self) -> float:
+        now = datetime.now().timestamp()
+        return (now - self.startTime) / (self.endTime - self.startTime) * 100
 
 
 class Reward:
