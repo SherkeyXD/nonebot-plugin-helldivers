@@ -1,5 +1,6 @@
 import pytest
 
+
 from nonebug import App
 from nonebot import logger
 
