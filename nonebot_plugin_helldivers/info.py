@@ -1,6 +1,7 @@
 from .api import API
 
 from datetime import datetime, timezone
+import asyncio
 
 
 class Assignment:
@@ -21,10 +22,19 @@ class Assignment:
     async def create(cls):
         raw = await API.GetRawApiV2AssignmentWar()
         raw = raw[0]
-        tasks = [
-            await Task.create(task, raw["progress"][index])
+        all_planets_info = await API.GetApiV1PlanetsAll()
+        all_planets_info_with_index = {
+            planet["index"]: planet for planet in all_planets_info
+        }
+        tasks_coroutines = [
+            Task.create(
+                info=task,
+                finished=raw["progress"][index],
+                planet_info=all_planets_info_with_index.get(task["values"][-1], None),
+            )
             for index, task in enumerate(raw["setting"]["tasks"])
         ]
+        tasks = await asyncio.gather(*tasks_coroutines)
         reward = [Reward(reward) for reward in raw["setting"]["rewards"]]
         return cls(raw, tasks, reward)
 
@@ -76,10 +86,12 @@ class Task:
         self.finished = finished
 
     @classmethod
-    async def create(cls, info: dict, finished: bool = False):
+    async def create(cls, info: dict, finished: bool = False, planet_info: dict = None):
         instance = cls(info, finished)
         planet_index = instance.values[-1]
-        instance.planetInfo = await Planet.create(planet_index)
+        instance.planetInfo = (
+            Planet(planet_info) if planet_info else await Planet.create(planet_index)
+        )
         return instance
 
     def __str__(self) -> str:
