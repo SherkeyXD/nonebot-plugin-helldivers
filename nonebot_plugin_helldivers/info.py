@@ -102,7 +102,7 @@ class Task:
             regen = f"{event.get_regen():.2f}%"
             sign = "🛡️"
         elif finished:
-            percent, regen, sign = "100.00%", "None", "✅"
+            percent, regen, sign = "已解放", "None", "✅"
         else:
             percent = f"{self.planetInfo.get_liberation():.5f}%"
             regen = f"{self.planetInfo.get_regen():.2f}%"
