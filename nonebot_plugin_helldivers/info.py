@@ -98,17 +98,16 @@ class Task:
         event = self.planetInfo.event
         finished = self.finished
         if event:
-            percent = (1 - event.health / event.maxHealth) * 100
-            regen = f"{event.get_percentage():.2f}%"
+            percent = f"{event.get_regen():.5f}%"
+            regen = f"{event.get_regen():.2f}%"
             sign = "🛡️"
         elif finished:
-            percent, regen, sign = 100, "None", "✅"
+            percent, regen, sign = "100.00%", "None", "✅"
         else:
-            percent = (1 - self.planetInfo.health / self.planetInfo.maxHealth) * 100
-            regen = f"{(self.planetInfo.regenPerSecond * 60 * 60 / self.planetInfo.maxHealth * 100):.2f}%"
+            percent = f"{self.planetInfo.get_liberation():.5f}%"
+            regen = f"{self.planetInfo.get_regen():.2f}%"
             sign = "❌"
-        percentage = f"{percent:.5f}%" if not finished else "100.00%"
-        return f"| {sign} | {self.planetInfo.name} | {percentage} | {regen} | {self.planetInfo.statistics.playerCount} |"
+        return f"| {sign} | {self.planetInfo.name} | {percent} | {regen} | {self.planetInfo.statistics.playerCount} |"
 
 
 class Planet:
@@ -136,6 +135,12 @@ class Planet:
     async def create(cls, index: int):
         raw = await API.GetApiV1Planets(index)
         return cls(raw)
+    
+    def get_liberation(self) -> float:
+        return (1 - self.health / self.maxHealth) * 100
+    
+    def get_regen(self) -> float:
+        return self.regenPerSecond * 60 * 60 / self.maxHealth * 100
 
 
 class Event:
@@ -168,7 +173,10 @@ class Event:
         dt = dt.replace(tzinfo=timezone.utc)
         return dt.timestamp()
 
-    def get_percentage(self) -> float:
+    def get_liberation(self) -> float:
+        return (1 - self.health / self.maxHealth) * 100
+
+    def get_regen(self) -> float:
         now = datetime.now().timestamp()
         return (now - self.startTime) / (self.endTime - self.startTime) * 100
 
