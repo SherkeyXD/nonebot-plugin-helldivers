@@ -1,6 +1,8 @@
 from .api import API
+from .utils import timestamp_to_describe_str, strptime_to_timestamp
 
-from datetime import datetime, timezone
+from collections import defaultdict
+from datetime import datetime
 import asyncio
 
 
@@ -39,19 +41,7 @@ class Assignment:
         return cls(raw, tasks, reward)
 
     def get_remaining_time(self) -> str:
-        msg = ""
-        if self.due > 60 * 60 * 24:
-            msg += f"{self.due // (60*60*24)} 天 "
-            self.due %= 60 * 60 * 24
-        if self.due > 60 * 60:
-            msg += f"{self.due // (60*60)} 小时 "
-            self.due %= 60 * 60
-        if self.due > 60:
-            msg += f"{self.due // 60} 分钟 "
-            self.due %= 60
-        if self.due > 0:
-            msg += f"{self.due} 秒 "
-        return msg.strip()
+        return timestamp_to_describe_str(self.due, lang="zh")
 
     def __str__(self) -> str:
         if self.type == 4:
@@ -98,7 +88,7 @@ class Task:
         event = self.planetInfo.event
         finished = self.finished
         if event:
-            percent = f"{event.get_regen():.5f}%"
+            percent = f"{event.get_regen():.2f}%"
             regen = f"{event.get_regen():.2f}%"
             sign = "🛡️"
         elif finished:
@@ -135,13 +125,40 @@ class Planet:
     async def create(cls, index: int):
         raw = await API.GetApiV1Planets(index)
         return cls(raw)
-    
+
     def get_liberation(self) -> float:
         return (1 - self.health / self.maxHealth) * 100
-    
+
     def get_regen(self) -> float:
         return self.regenPerSecond * 60 * 60 / self.maxHealth * 100
 
+
+class EventsAll:
+    def __init__(self, raw) -> None:
+        self.raw = raw
+        self.planets = [Planet(planet) for planet in self.raw]
+
+    @classmethod
+    async def create(cls):
+        info = await API.GetApiV1PlanetEvents()
+        return cls(info)
+
+    def __str__(self) -> str:
+        info = ""
+        events = defaultdict(list)
+        for planet in self.planets:
+            event = planet.event
+            events[event.eventType].append(planet)
+        for event_type in events:
+            info += f"## {Event.table[event_type]}任务\n\n"
+            if event_type == 1:
+                info += "| 星球 | 我方进度 | 敌人进度 | 剩余时间 | 人数 |\n"
+                info += "| --- | --- | --- | --- | --- |\n"
+                for planet in events[event_type]:
+                    event = planet.event
+                    info += f"{planet.name} | {event.get_liberation():.2f}% | {event.get_regen():.2f}% | {event.get_remaining_time()} | {planet.statistics.playerCount} |\n"
+        print(info)
+        return ""
 
 class Event:
     table = {1: "保卫"}
@@ -152,8 +169,8 @@ class Event:
         self.faction = info["faction"]
         self.health = info["health"]
         self.maxHealth = info["maxHealth"]
-        self.startTime = self.to_timestamp(info["startTime"])
-        self.endTime = self.to_timestamp(info["endTime"])
+        self.startTime = strptime_to_timestamp(info["startTime"])
+        self.endTime = strptime_to_timestamp(info["endTime"])
         self.campaignId = info["campaignId"]
         self.jointOperationIds = info["jointOperationIds"]
 
@@ -163,15 +180,8 @@ class Event:
             return None
         return cls(info)
 
-    @staticmethod
-    def to_timestamp(string: str) -> float:
-        date_part, frac_seconds_with_z = string.split(".")
-        frac_seconds = frac_seconds_with_z[:-1]
-        frac_seconds_truncated = frac_seconds[:6]
-        adjusted_timestamp = f"{date_part}.{frac_seconds_truncated}Z"
-        dt = datetime.strptime(adjusted_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-        dt = dt.replace(tzinfo=timezone.utc)
-        return dt.timestamp()
+    def get_remaining_time(self) -> str:
+        return timestamp_to_describe_str(self.endTime - datetime.now().timestamp(), lang="en")
 
     def get_liberation(self) -> float:
         return (1 - self.health / self.maxHealth) * 100

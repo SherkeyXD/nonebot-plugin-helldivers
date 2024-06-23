@@ -7,7 +7,7 @@ from nonebot import logger
 
 
 async def get_assignment_with_retry(retries : int = 3):
-    from nonebot_plugin_helldivers import Assignment
+    from nonebot_plugin_helldivers.info import Assignment
     for retry in range(1, retries+1):
         try:
             assignment = await Assignment.create()
