@@ -91,7 +91,7 @@ class Task:
             percent = f"{event.get_regen():.2f}%"
             regen = f"{event.get_regen():.2f}%"
             sign = "🛡️"
-        elif finished:
+        elif finished or self.planetInfo.get_regen() >= 100: # 实际上经常写为500%，这里放宽标准
             percent, regen, sign = "已解放", "None", "✅"
         else:
             percent = f"{self.planetInfo.get_liberation():.5f}%"
