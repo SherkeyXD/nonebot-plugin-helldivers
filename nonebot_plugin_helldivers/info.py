@@ -1,7 +1,7 @@
 from .api import API
 from .utils import timestamp_to_describe_str, strptime_to_timestamp
 
-from collections import defaultdict
+
 from datetime import datetime
 import asyncio
 
@@ -145,10 +145,7 @@ class EventsAll:
 
     def __str__(self) -> str:
         info = ""
-        events = defaultdict(list)
-        for planet in self.planets:
-            event = planet.event
-            events[event.eventType].append(planet)
+        events = {event_type: [planet for planet in self.planets if planet.event.eventType == event_type] for event_type in set(planet.event.eventType for planet in self.planets)}
         for event_type in events:
             info += f"## {Event.table[event_type]}任务\n\n"
             if event_type == 1:
@@ -156,7 +153,7 @@ class EventsAll:
                 info += "| --- | --- | --- | --- | --- |\n"
                 for planet in events[event_type]:
                     event = planet.event
-                    info += f"{planet.name} | {event.get_liberation():.2f}% | {event.get_regen():.2f}% | {event.get_remaining_time()} | {planet.statistics.playerCount} |\n"
+                    info += f"| {planet.name} | {event.get_liberation():.2f}% | {event.get_regen():.2f}% | {event.get_remaining_time()} | {planet.statistics.playerCount} |\n"
         print(info)
         return ""
 

@@ -14,10 +14,10 @@ def strptime_to_timestamp(string: str) -> float:
 
 
 class TimeDescriptionTranslationEN(Enum):
-    DAY = "D"
-    HOUR = "H"
-    MINUTE = "M"
-    SECOND = "S"
+    DAY = "d"
+    HOUR = "h"
+    MINUTE = "m"
+    SECOND = "s"
 
 class TimeDescriptionTranslationZH(Enum):
     DAY = " 天 "
