@@ -88,7 +88,7 @@ class Task:
         event = self.planetInfo.event
         finished = self.finished
         if event:
-            percent = f"{event.get_regen():.2f}%"
+            percent = f"{event.get_liberation():.2f}%"
             regen = f"{event.get_regen():.2f}%"
             sign = "🛡️"
         elif finished or self.planetInfo.get_regen() >= 100: # 实际上经常写为500%，这里放宽标准
