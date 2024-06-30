@@ -6,7 +6,7 @@ from nonebot.plugin import inherit_supported_adapters
 
 from nonebot import require
 
-from .info import Assignment
+from .info import Assignment, ActiveEvents
 from .config import Config
 
 require("nonebot_plugin_htmlrender")
@@ -34,36 +34,39 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-async def send_wait_message(
-    send: callable, flag: asyncio.Event, time: int = 3, message: str = ""
-):
-    await asyncio.sleep(time)
-    if not flag.is_set():
-        await send(message)
-
-
-short = on_command("简报", aliases={"hd简报"})
-
-
-@short.handle()
-async def get_war_info():
+async def handle_communication(task_creator):
     finished_flag = asyncio.Event()
-    timer_task = asyncio.create_task(
-        send_wait_message(
-            lambda message: short.send(message),
-            flag=finished_flag,
-            time=3,
-            message="正在与超级地球最高司令部进行通信，请民主地等待",
-        )
-    )
+
+    async def send_wait_message():
+        await asyncio.sleep(3)
+        if not finished_flag.is_set():
+            await MessageFactory(
+                Text("正在与超级地球最高司令部进行通信，请民主地等待")
+            ).send(reply=False, at_sender=False)
+
+    timer_task = asyncio.create_task(send_wait_message())
+
     try:
-        info = await Assignment.create()
+        info = await task_creator()
         finished_flag.set()
         timer_task.cancel()
         pic = await md_to_pic(str(info))
         await MessageFactory(Image(pic)).send(reply=True, at_sender=False)
-    except IndexError:  # 目前没有任务
-        await MessageFactory(Text("等待超级地球最高司令部的进一步指令")).send(
-            reply=True, at_sender=False
-        )
-    await short.finish()
+    except IndexError as e:  # 目前没有任务
+        await MessageFactory(Text(str(e))).send(reply=True, at_sender=False)
+    except Exception as e:
+        await MessageFactory(Text(f"发生错误：\n{str(e)}")).send(reply=True, at_sender=False)
+
+
+main_order = on_command("简报", aliases={"hd简报"})
+@main_order.handle()
+async def get_main_order():
+    await handle_communication(Assignment.create)
+    await main_order.finish()
+
+
+active_events = on_command("事件", aliases={"hd事件"})
+@active_events.handle()
+async def get_all_events():
+    await handle_communication(ActiveEvents.create)
+    await active_events.finish()

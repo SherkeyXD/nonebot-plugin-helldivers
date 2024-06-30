@@ -9,6 +9,8 @@ import asyncio
 class Assignment:
     def __init__(self, raw, tasks, reward) -> None:
         self.raw = raw
+        if not self.raw:
+            raise IndexError("等待超级地球最高司令部的进一步指令")
         self.id = self.raw["id32"]
         self.progress = self.raw["progress"]
         self.due = self.raw["expiresIn"]  # in seconds
@@ -88,14 +90,16 @@ class Task:
         event = self.planetInfo.event
         finished = self.finished
         if event:
-            percent = f"{event.get_liberation():.2f}%"
-            regen = f"{event.get_regen():.2f}%"
+            percent = f"{event.get_liberation():.4f}0%"
+            regen = f"{event.get_regen():.4f}0%"
             sign = "🛡️"
-        elif finished or self.planetInfo.get_regen() >= 100: # 实际上经常写为500%，这里放宽标准
+        elif (
+            finished or self.planetInfo.get_regen() >= 100
+        ):  # 实际上经常写为500%，这里放宽标准
             percent, regen, sign = "已解放", "None", "✅"
         else:
             percent = f"{self.planetInfo.get_liberation():.5f}%"
-            regen = f"{self.planetInfo.get_regen():.2f}%"
+            regen = f"-{self.planetInfo.get_regen():.2f}%"
             sign = "❌"
         return f"| {sign} | {self.planetInfo.name} | {percent} | {regen} | {self.planetInfo.statistics.playerCount} |"
 
@@ -133,10 +137,20 @@ class Planet:
         return self.regenPerSecond * 60 * 60 / self.maxHealth * 100
 
 
-class EventsAll:
+class ActiveEvents:
     def __init__(self, raw) -> None:
         self.raw = raw
         self.planets = [Planet(planet) for planet in self.raw]
+        self.events = {
+            event_type: [
+                planet
+                for planet in self.planets
+                if planet.event.eventType == event_type
+            ]
+            for event_type in set(planet.event.eventType for planet in self.planets)
+        }
+        if not self.events:
+            raise IndexError("当前没有活跃的星球事件，绝地潜兵，享受你的假期吧")
 
     @classmethod
     async def create(cls):
@@ -144,18 +158,20 @@ class EventsAll:
         return cls(info)
 
     def __str__(self) -> str:
-        info = ""
-        events = {event_type: [planet for planet in self.planets if planet.event.eventType == event_type] for event_type in set(planet.event.eventType for planet in self.planets)}
-        for event_type in events:
+        info = "# 当前事件\n\n"
+        for event_type in self.events:
             info += f"## {Event.table[event_type]}任务\n\n"
             if event_type == 1:
-                info += "| 星球 | 我方进度 | 敌人进度 | 剩余时间 | 人数 |\n"
-                info += "| --- | --- | --- | --- | --- |\n"
-                for planet in events[event_type]:
+                info += "| 预计战况 | 星球 | 我方进度 | 敌人进度 | 剩余时间 | 人数 |\n"
+                info += "| --- | --- | --- | --- | --- | --- |\n"
+                for planet in self.events[event_type]:
                     event = planet.event
-                    info += f"| {planet.name} | {event.get_liberation():.2f}% | {event.get_regen():.2f}% | {event.get_remaining_time()} | {planet.statistics.playerCount} |\n"
-        print(info)
-        return ""
+                    liberation, regen = event.get_liberation(), event.get_regen()
+                    sign = "✅" if liberation > regen else "❌"
+                    info += f"| {sign} | {planet.name} | {liberation:.2f}% | {regen:.2f}% | {event.get_remaining_time()} | {planet.statistics.playerCount} |\n"
+            info += "\n\n"
+        return info
+
 
 class Event:
     table = {1: "保卫"}
@@ -178,7 +194,9 @@ class Event:
         return cls(info)
 
     def get_remaining_time(self) -> str:
-        return timestamp_to_describe_str(self.endTime - datetime.now().timestamp(), lang="en")
+        return timestamp_to_describe_str(
+            self.endTime - datetime.now().timestamp(), lang="en"
+        )
 
     def get_liberation(self) -> float:
         return (1 - self.health / self.maxHealth) * 100
